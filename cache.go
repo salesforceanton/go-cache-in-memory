@@ -39,6 +39,9 @@ func CreateCacheableFunc(targetFunc func(params ...interface{}) interface{}) fun
 		if value == nil {
 			value = targetFunc(params...)
 			cache.Set(key, value)
+			fmt.Printf("Put result to cache")
+		} else {
+			fmt.Printf("Retain result from cache")
 		}
 		return value
 	}
