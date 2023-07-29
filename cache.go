@@ -30,9 +30,9 @@ func NewCache() *Cache {
 		scope: make(map[string]interface{}),
 	}
 }
-func CreateCacheableFunc(targetFunc func(params ...interface{}) interface{}) func(...interface{}) interface{} {
+func CreateCacheableFunc(targetFunc func(params ...any) interface{}) func(...interface{}) interface{} {
 	cache := NewCache()
-	return func(params ...interface{}) interface{} {
+	return func(params ...any) interface{} {
 		key := cache.generateKeyHash(params...)
 
 		value := cache.Get(key)
