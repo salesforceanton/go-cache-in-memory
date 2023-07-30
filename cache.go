@@ -3,6 +3,7 @@ package cache
 import (
 	"crypto/sha1"
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -12,16 +13,23 @@ const (
 
 type Cache struct {
 	scope map[string]interface{}
+	mu    *sync.RWMutex
 }
 
 func (c *Cache) Set(key string, value interface{}) {
+	c.mu.Lock()
 	c.scope[key] = value
+	c.mu.Unlock()
 }
 func (c *Cache) SetWithLifetime(key string, value interface{}, lifetime time.Duration) {
+	c.mu.Lock()
 	c.scope[key] = value
+	c.mu.Unlock()
 	go c.RunCleaner(key, lifetime)
 }
 func (c *Cache) Get(key string) interface{} {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	value, ok := c.scope[key]
 	if !ok {
 		return nil
@@ -39,6 +47,7 @@ func (c *Cache) RunCleaner(key string, lifetime time.Duration) {
 func NewCache() *Cache {
 	return &Cache{
 		scope: make(map[string]interface{}),
+		mu:    new(sync.RWMutex),
 	}
 }
 
