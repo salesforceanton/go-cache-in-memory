@@ -3,9 +3,12 @@ package cache
 import (
 	"crypto/sha1"
 	"fmt"
+	"time"
 )
 
-const cryptoKey = "dsafsdg23dds"
+const (
+	cryptoKey = "dsafsdg23dds"
+)
 
 type Cache struct {
 	scope map[string]interface{}
@@ -13,6 +16,10 @@ type Cache struct {
 
 func (c *Cache) Set(key string, value interface{}) {
 	c.scope[key] = value
+}
+func (c *Cache) SetWithLifetime(key string, value interface{}, lifetime time.Duration) {
+	c.scope[key] = value
+	go c.RunCleaner(key, lifetime)
 }
 func (c *Cache) Get(key string) interface{} {
 	value, ok := c.scope[key]
@@ -24,12 +31,18 @@ func (c *Cache) Get(key string) interface{} {
 func (c *Cache) Delete(key string) {
 	delete(c.scope, key)
 }
+func (c *Cache) RunCleaner(key string, lifetime time.Duration) {
+	time.Sleep(lifetime)
+	c.Delete(key)
+}
 
 func NewCache() *Cache {
 	return &Cache{
 		scope: make(map[string]interface{}),
 	}
 }
+
+// TODO: Draft logic need to improve
 func CreateCacheableFunc(targetFunc func(...interface{}) interface{}) func(...interface{}) interface{} {
 	cache := NewCache()
 	return func(params ...interface{}) interface{} {
