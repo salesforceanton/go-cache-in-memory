@@ -25,7 +25,7 @@ func (c *Cache) SetWithLifetime(key string, value interface{}, lifetime time.Dur
 	c.mu.Lock()
 	c.scope[key] = value
 	c.mu.Unlock()
-	c.RunCleaner(key, lifetime)
+	go c.RunCleaner(key, lifetime)
 }
 func (c *Cache) Get(key string) interface{} {
 	c.mu.RLock()
