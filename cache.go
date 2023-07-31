@@ -40,15 +40,8 @@ func (c *Cache) Delete(key string) {
 	delete(c.scope, key)
 }
 func (c *Cache) RunCleaner(key string, lifetime time.Duration) {
-	for {
-		select {
-		case <-time.After(lifetime):
-			c.Delete(key)
-			return
-
-		default:
-		}
-	}
+	time.Sleep(lifetime)
+	c.Delete(key)
 }
 
 func NewCache() *Cache {
