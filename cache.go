@@ -25,7 +25,7 @@ func (c *Cache) SetWithLifetime(key string, value interface{}, lifetime time.Dur
 	c.mu.Lock()
 	c.scope[key] = value
 	c.mu.Unlock()
-	go c.RunCleaner(key, lifetime)
+	c.RunCleaner(key, lifetime)
 }
 func (c *Cache) Get(key string) interface{} {
 	c.mu.RLock()
@@ -40,8 +40,15 @@ func (c *Cache) Delete(key string) {
 	delete(c.scope, key)
 }
 func (c *Cache) RunCleaner(key string, lifetime time.Duration) {
-	time.Sleep(lifetime)
-	c.Delete(key)
+	for {
+		select {
+		case <-time.After(lifetime):
+			c.Delete(key)
+			return
+
+		default:
+		}
+	}
 }
 
 func NewCache() *Cache {
